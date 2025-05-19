@@ -11,7 +11,7 @@ A Python script that converts raster images to SVG vectors with reduced colors.
 ![Bear-8](assets/bear-8.svg)
 
 ## 5 color  SVG
-![Bear-5](assets/bear-5.svgg)
+![Bear-5](assets/bear-5.svg)
 
 
 
