@@ -1,10 +1,16 @@
 # Image to SVG Converter
 
 A Python script that converts raster images to SVG vectors with reduced colors.
-
+## Original JPG
 ![Bear](bear.jpg)
+
+## 16 color  SVG
 ![Bear-16](assets/bear-16.svg)
+
+## 8 color  SVG
 ![Bear-8](assets/bear-8.svg)
+
+## 5 color  SVG
 ![Bear-5](assets/bear-5.svgg)
 
 
