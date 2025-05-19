@@ -6,11 +6,12 @@ from sklearn.cluster import KMeans
 import xml.etree.ElementTree as ET
 from pathlib import Path
 import argparse
+from skimage import measure, morphology
 
-def quantize_colors(image_path, n_colors=16):
+def quantize_colors(image_path, n_colors=5):
     """Reduce image to n_colors using K-means clustering."""
     # Open the image
-    img = Image.open(image_path).convert('RGB')  # Convert to RGB for simplicity
+    img = Image.open(image_path).convert('RGB')
     width, height = img.size
     
     # Get pixel data
@@ -30,7 +31,7 @@ def quantize_colors(image_path, n_colors=16):
     # Return the labels in 2D shape for easier processing
     return quantized, labels.reshape(height, width), centers.astype(np.uint8)
 
-def create_svg(quantized, labels, colors, output_path):
+def create_svg(labels, colors, output_path, min_area=50, simplify_factor=2):
     """Create an SVG with vector paths for each color region."""
     height, width = labels.shape
     
@@ -43,12 +44,44 @@ def create_svg(quantized, labels, colors, output_path):
         'viewBox': f'0 0 {width} {height}'
     })
     
+    # Count unique colors
+    unique_colors = len(np.unique(labels))
+    is_bicolor = unique_colors <= 2
+    
+    # Set background to the most common color
+    color_counts = np.bincount(labels.flatten())
+    most_common_color_idx = np.argmax(color_counts)
+    bg_color = colors[most_common_color_idx]
+    r, g, b = bg_color
+    hex_bg_color = f'#{r:02x}{g:02x}{b:02x}'
+    
+    # Add background rectangle
+    ET.SubElement(svg, 'rect', {
+        'x': '0',
+        'y': '0',
+        'width': str(width),
+        'height': str(height),
+        'fill': hex_bg_color
+    })
+    
     print("Creating SVG elements...")
-    # Create rectangles for color regions
-    for color_idx, color in enumerate(colors):
-        # Convert color to hex
-        r, g, b = color
+    
+    # Special case for bicolor images to avoid the diagonal artifact
+    if is_bicolor:
+        # Find the second color
+        second_color_idx = 1 if most_common_color_idx == 0 else 0
+        
+        # Get the second color in hex
+        r, g, b = colors[second_color_idx]
         hex_color = f'#{r:02x}{g:02x}{b:02x}'
+        
+        # Create a more aggressively preprocessed mask for the second color
+        mask = (labels == second_color_idx).astype(np.uint8)
+        
+        # Apply stronger morphological operations for bi-color images
+        mask = morphology.binary_closing(mask, morphology.disk(3))
+        mask = morphology.remove_small_objects(mask.astype(bool), min_size=min_area)
+        mask = morphology.remove_small_holes(mask.astype(bool), area_threshold=min_area)
         
         # Create a group for this color
         color_group = ET.SubElement(svg, 'g', {
@@ -56,27 +89,73 @@ def create_svg(quantized, labels, colors, output_path):
             'stroke': 'none'
         })
         
-        # Find all pixels of this color and create rectangles for horizontal runs
-        for y in range(height):
-            x = 0
-            while x < width:
-                if labels[y, x] == color_idx:
-                    # Start of a run
-                    start_x = x
-                    # Find end of run
-                    while x < width and labels[y, x] == color_idx:
-                        x += 1
-                    # Create a rectangle for this run
-                    run_width = x - start_x
-                    if run_width > 0:
-                        rect = ET.SubElement(color_group, 'rect', {
-                            'x': str(start_x),
-                            'y': str(y),
-                            'width': str(run_width),
-                            'height': '1'
-                        })
-                else:
-                    x += 1
+        # Find contours
+        contours = measure.find_contours(mask, 0.5)
+        
+        # Create SVG paths for each contour
+        for contour in contours:
+            # Skip small contours
+            if len(contour) < min_area:
+                continue
+            
+            # Simplify contour more aggressively
+            step = max(1, len(contour) // 100)  # More aggressive simplification
+            simplified_contour = contour[::step]
+            
+            # Create path
+            path_data = f"M {simplified_contour[0][1]},{simplified_contour[0][0]}"
+            for x, y in simplified_contour[1:]:
+                path_data += f" L {y},{x}"
+            path_data += " Z"  # Close path
+            
+            ET.SubElement(color_group, 'path', {
+                'd': path_data
+            })
+    else:
+        # Regular processing for images with more than 2 colors
+        for color_idx, color in enumerate(colors):
+            if color_idx == most_common_color_idx:
+                continue  # Skip background color
+                
+            # Convert color to hex
+            r, g, b = color
+            hex_color = f'#{r:02x}{g:02x}{b:02x}'
+            
+            # Create binary mask for this color
+            mask = (labels == color_idx).astype(np.uint8)
+            
+            # Apply morphological operations
+            mask = morphology.binary_dilation(mask, morphology.disk(2))
+            mask = morphology.binary_erosion(mask, morphology.disk(1))
+            mask = morphology.binary_opening(mask, morphology.disk(1))
+            
+            # Find contours
+            contours = measure.find_contours(mask, 0.5)
+            
+            # Create a group for this color
+            color_group = ET.SubElement(svg, 'g', {
+                'fill': hex_color,
+                'stroke': 'none'
+            })
+            
+            # Create SVG paths for each contour
+            for contour in contours:
+                # Skip small contours
+                if len(contour) < min_area:
+                    continue
+                    
+                # Simplify contour
+                simplified_contour = contour[::simplify_factor]
+                
+                # Create path
+                path_data = f"M {simplified_contour[0][1]},{simplified_contour[0][0]}"
+                for x, y in simplified_contour[1:]:
+                    path_data += f" L {y},{x}"
+                path_data += " Z"  # Close path
+                
+                ET.SubElement(color_group, 'path', {
+                    'd': path_data
+                })
     
     # Create XML tree and save to file
     print("Writing SVG file...")
@@ -96,7 +175,11 @@ def main():
     parser = argparse.ArgumentParser(description='Convert an image to SVG with reduced colors')
     parser.add_argument('input_file', help='Input image file')
     parser.add_argument('-o', '--output', help='Output SVG file')
-    parser.add_argument('-c', '--colors', type=int, default=16, help='Number of colors (default: 16)')
+    parser.add_argument('-c', '--colors', type=int, default=5, help='Number of colors (default: 5)')
+    parser.add_argument('-m', '--min_area', type=int, default=50, 
+                        help='Minimum area for shapes (default: 50)')
+    parser.add_argument('-s', '--simplify', type=int, default=2,
+                        help='Path simplification factor (default: 2)')
     args = parser.parse_args()
     
     # Set default output path if not specified
@@ -111,7 +194,7 @@ def main():
         quantized, labels, colors = quantize_colors(args.input_file, args.colors)
         
         # Create SVG
-        create_svg(quantized, labels, colors, args.output)
+        create_svg(labels, colors, args.output, args.min_area, args.simplify)
         
         print(f"SVG successfully saved to {args.output}")
     except Exception as e:
