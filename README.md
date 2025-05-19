@@ -2,6 +2,11 @@
 
 A Python script that converts raster images to SVG vectors with reduced colors.
 
+![Bear](bear.jpg)
+![Bear](bear.svg)
+
+
+
 ## Features
 
 - Reduces an image to a specified number of colors (default is 16)
