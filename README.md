@@ -5,14 +5,13 @@ A Python script that converts raster images to SVG vectors using color quantizat
 ## Original JPG
 ![Bear](bear.jpg)
 
-## 16 color SVG
-![Bear-16](assets/bear-16.svg)
+### 12 Colors
+![12 Colors](assets/colors_12.svg)
 
-## 8 color SVG
-![Bear-8](assets/bear-8.svg)
+## Examples and Results
 
-## 5 color SVG
-![Bear-5](assets/bear-5.svg)
+Check out our [SVG Conversion Results Showcase](results.md) to see examples of how different parameters affect the SVG output.
+
 
 ## Features
 

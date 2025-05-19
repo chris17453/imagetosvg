@@ -1,10 +1,10 @@
 # Makefile for testing image2svg options
 
 # Source image
-IMAGE := chris-ex1.png
+IMAGE := bear.jpg
 
 # Output directory
-OUTPUT_DIR := assets/chris
+OUTPUT_DIR := assets/
 
 # Options to test
 COLORS := 2 3 4 5 8 12
@@ -27,7 +27,6 @@ color_test:
 	@echo "Testing different color counts..."
 	@for c in $(COLORS); do \
 		echo "  Processing with $$c colors..."; \
-		echo python3 $(SCRIPT) $(IMAGE) -o $(OUTPUT_DIR)/colors_$$c.svg -c $$c; \
 		python3 $(SCRIPT) $(IMAGE) -o $(OUTPUT_DIR)/colors_$$c.svg -c $$c; \
 	done
 
