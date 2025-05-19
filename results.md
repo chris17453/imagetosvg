@@ -5,70 +5,70 @@ This document demonstrates the results of the SVG conversion with different para
 ## Color Variations
 
 ### 2 Colors
-![2 Colors](assets/chris/colors_2.svg)
+![2 Colors](assets/colors_2.svg)
 
 ### 3 Colors
-![3 Colors](assets/chris/colors_3.svg)
+![3 Colors](assets/colors_3.svg)
 
 ### 4 Colors
-![4 Colors](assets/chris/colors_4.svg)
+![4 Colors](assets/colors_4.svg)
 
 ### 5 Colors
-![5 Colors](assets/chris/colors_5.svg)
+![5 Colors](assets/colors_5.svg)
 
 ### 8 Colors
-![8 Colors](assets/chris/colors_8.svg)
+![8 Colors](assets/colors_8.svg)
 
 ### 12 Colors
-![12 Colors](assets/chris/colors_12.svg)
+![12 Colors](assets/colors_12.svg)
 
 As you can see, increasing the number of colors captures more detail in the image, but results in larger file sizes and more complex SVGs. The 2-color version creates a stark, high-contrast image, while the 12-color version preserves more subtle color variations.
 
 ## Layering Methods
 
 ### Dark First (Default)
-![Dark First](assets/chris/layer_dark_first.svg)
+![Dark First](assets/layer_dark_first.svg)
 
 ### Light First
-![Light First](assets/chris/layer_light_first.svg)
+![Light First](assets/layer_light_first.svg)
 
 ### By Area
-![By Area](assets/chris/layer_area.svg)
+![By Area](assets/layer_area.svg)
 
 ### By Hue
-![By Hue](assets/chris/layer_hue.svg)
+![By Hue](assets/layer_hue.svg)
 
 The layering method affects how colors stack in the SVG. "Dark First" places darker colors underneath lighter ones, which often produces a more natural look. "Light First" does the opposite. "Area" stacks larger color regions first, while "Hue" orders by color hue.
 
 ## Minimum Area Threshold
 
 ### Min Area: 10 pixels
-![Min Area 10](assets/chris/min_area_10.svg)
+![Min Area 10](assets/min_area_10.svg)
 
 ### Min Area: 30 pixels
-![Min Area 30](assets/chris/min_area_30.svg)
+![Min Area 30](assets/min_area_30.svg)
 
 ### Min Area: 50 pixels (Default)
-![Min Area 50](assets/chris/min_area_50.svg)
+![Min Area 50](assets/min_area_50.svg)
 
 ### Min Area: 100 pixels
-![Min Area 100](assets/chris/min_area_100.svg)
+![Min Area 100](assets/min_area_100.svg)
 
 The minimum area parameter filters out small color patches. A lower value preserves more detail but creates more complex SVGs with more paths. Higher values simplify the image by removing small details.
 
 ## Simplification Factor
 
 ### Simplify: 1 (No Simplification)
-![Simplify 1](assets/chris/simplify_1.svg)
+![Simplify 1](assets/simplify_1.svg)
 
 ### Simplify: 2 (Default)
-![Simplify 2](assets/chris/simplify_2.svg)
+![Simplify 2](assets/simplify_2.svg)
 
 ### Simplify: 4
-![Simplify 4](assets/chris/simplify_4.svg)
+![Simplify 4](assets/simplify_4.svg)
 
 ### Simplify: 8
-![Simplify 8](assets/chris/simplify_8.svg)
+![Simplify 8](assets/simplify_8.svg)
 
 The simplification factor controls how aggressively path points are reduced. A factor of 1 keeps all points, creating smoother but larger paths. Higher values reduce file size but may make edges look more jagged.
 
