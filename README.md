@@ -43,10 +43,10 @@ git clone https://github.com/yourusername/image-to-svg.git
 cd image-to-svg
 
 # Install dependencies with pipenv
-pipenv install numpy pillow scikit-learn
+pipenv install numpy pillow scikit-learn scikit-image
 
 # Or use pip directly
-pip install numpy pillow scikit-learn
+pip install numpy pillow scikit-learn  scikit-image
 ```
 
 ## Usage
